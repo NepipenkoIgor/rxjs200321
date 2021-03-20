@@ -1,95 +1,113 @@
-import '../../assets/css/style.css';
-import { fromEvent, interval, Observable, Subscriber } from "rxjs";
-import { pluck } from "rxjs/operators";
+//import '../../assets/css/style.css';
+import { concat, interval } from "rxjs";
+import { filter, map, skip, take, tap } from "rxjs/operators";
 
-// const sequence = new Promise((res) => {
-//     let count = 1;
-//     setInterval(() => {
-//         res(count++);
-//     }, 1000);
-// })
-//
-// sequence.then((v) => console.log(v));
-// sequence.then((v) => console.log(v));
-// sequence.then((v) => console.log(v));
-// sequence.then((v) => console.log(v));
-// sequence.then((v) => console.log(v));
-// const sequence =  function* iteratorFn(){
-//     let item = 1;
-//     while (true) {
-//         yield  item++;
-//     }
-// }();
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
-// console.log(sequence.next().value);
 
-// ReactiveX = iterator + observer;
-// interval(1000)
+// of(1, 2, 2, 3, 4)
 //     .subscribe((v) => {
 //         console.log(v);
-//     });
-// let count = 1;
-// const sequence$ = new Observable((subscriber: Subscriber<number>) => {
-//     console.log('INITIATE');
-//     const intervalID = setInterval(() => {
-//         // if (count % 5 === 0) {
-//         //     clearInterval(intervalID);
-//         //     subscriber.complete();
-//         //     return;
-//         // }
-//         subscriber.next(++count);
-//     }, 1000)
-// })
-// // const sequence$ = fromEvent<MouseEvent>(document, 'click')
-// sequence$.subscribe((v) => {
-//     console.log(`Sub 1 ====> ${v}`);
-// }, () => {
-// }, () => {
-//     console.log('complete');
-// })
-//
-//
-// setTimeout(() => {
-//     sequence$.subscribe((v) => {
-//         console.log(`Sub 2 ====> ${v}`);
-//     }, () => {
-//     }, () => {
-//         console.log('complete');
 //     })
-// }, 5000)
 
-const socket: WebSocket = new WebSocket('wss://echo.websocket.org');
+// from(fetch('http://learn.javascript.ru/courses/groups/api/participants?key=157iojl').then((res) => res.json()))
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
 
-const sequence$ = new Observable((subscriber: Subscriber<any>) => {
-    function listener(e: Event) {
-        subscriber.next(e);
-    }
+// from([1, 2, 3, 4, 5])
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
 
-    socket.addEventListener('message', listener);
+
+// ajax('http://learn.javascript.ru/courses/groups/api/participants?key=157iojl')
+//     .subscribe((res: AjaxResponse) => {
+//         console.log(res);
+//     })
+
+// const random = Math.round(Math.random() * 10);
+// const sequence$ = iif(() => {
+//     return random >= 5;
+// }, of(`First number ${random}`), of(`Second number ${random}`));
+//
+// sequence$.subscribe((v) => {
+//     console.log(v);
+// })
+
+// const sequence$ = defer(() => {
+//     return random >= 5
+//         ? random >= 8
+//             ? of(`First number ${random}`)
+//             : of(`Second number ${random}`)
+//         : of(`Third number ${random}`)
+// })
+//
+// sequence$.subscribe((v) => {
+//     console.log(v);
+// })
+
+
+// ajax('http://learn.javascript.ru/courses/groups/api/participants?key=157iojl')
+//     .pipe(
+//         pluck('response'),
+//         concatAll(),
+//         map((user: any) => `${user.firstName} ${user.surname}`),
+//         toArray()
+//     )
+//     .subscribe((userWithFullName: any[]) => {
+//         console.log(userWithFullName);
+//     })
+
+/*
+import fs from 'fs';
+import util from 'util';
+import { bindNodeCallback, from } from "rxjs";
+import { distinctUntilChanged, isEmpty, map } from "rxjs/operators";
+
+// const readFile = bindNodeCallback(fs.readFile);
+const pReadFile  = util.promisify(fs.readFile);
+const readFile = from(pReadFile(`${__dirname}/text`))
+readFile
+    .pipe(
+        map((buffer) => {
+            const str = buffer.toString();
+            const regExp = />([^<]+)</;
+            const matches = regExp.exec(str);
+            return matches && matches[1];
+        })
+    ).subscribe((v) => {
+    console.log(v);
 })
+*/
 
-socket.addEventListener('open', (e) => {
-    console.log('CONNECT') //
-    let count = 0;
-    const intervalId = setInterval(() => {
-        socket.send((count++).toString());
-    }, 2000)
-    sequence$
-        // .pipe(pluck('data'))
-        .subscribe((e) => {
-            console.log(`Sub 1 ===> ${e.data}`);
-        });
-    setTimeout(() => {
-        sequence$
-            // .pipe(pluck('data'))
-            .subscribe((e) => {
-                console.log(`Sub 2 ===> ${e.data}`);
-            });
-    }, 10000)
-})
 
+const sequence$ = interval(1000);
+const sequence2$ = interval(1000)
+    .pipe(skip(2), take(2));
+
+/*
+   sequence$ ---0---1---2---3---4--
+      filter((x: number)=> x%2=== 0)
+             ---0-------2-------4--
+      tap((x: number)=> x*2)
+             ---0-------2-------4--
+      map((x: number)=> x*2);
+             ---0-------4-------8--
+      skip(1)
+             -----------4-------8--
+      take(2)
+             -----------4-------8|
+      concat sequence1$
+
+   sequence$ -----------4-------8-----------2---3|
+ */
+const s1$ = sequence$.pipe(
+    filter((x: number) => x % 2 === 0),
+    tap((x: number) => x * 2),
+    map((x: number) => x * 2),
+    skip(1),
+    take(2),
+);
+concat(s1$, sequence2$)
+    .subscribe((v) => {
+        console.log(v);
+    })
