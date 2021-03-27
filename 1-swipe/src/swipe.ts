@@ -16,7 +16,7 @@ const touchEnd$ = getX(
 );
 
 
-function getX(source$: Observable<MouseEvent | TouchEvent>): Observable<number> {
+export  function getX(source$: Observable<MouseEvent | TouchEvent>): Observable<number> {
     return source$
         .pipe(map((e: MouseEvent | TouchEvent) => {
             if (e instanceof TouchEvent) {
