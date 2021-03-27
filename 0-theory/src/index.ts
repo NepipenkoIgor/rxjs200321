@@ -1,68 +1,29 @@
 import '../../assets/css/style.css';
-import { AsyncSubject, BehaviorSubject, Observable, Observer, ReplaySubject, Subject } from "rxjs";
-import { ajax } from "rxjs/ajax";
-// Observable + Observer = Subject
+import { BehaviorSubject, ConnectableObservable, interval, ReplaySubject, Subject, Subscription } from "rxjs";
+import { multicast, publish, refCount, share } from "rxjs/operators";
 
-const sequence$$ = new ReplaySubject(undefined, 1500);
+const sequence$ = interval(1000)
+    .pipe(
+        share()
+        // publish + refCount = share()
+        // multicast(subject) = publish
+    ); //  as ConnectableObservable<any>
 
-// sequence$$.next()
-
-// sequence$$.subscribe((v) => {
-//     console.log('Comp1', v);
-// })
-//
-// sequence$$.next({name: 'Ihor', age: 30})
-// setTimeout(() => {
-//     sequence$$.next({name: 'Ihor', age: 31})
-// }, 1000);
-// setTimeout(() => {
-//     sequence$$.next({name: 'Ihor', age: 34})
-// }, 2000);
-// setTimeout(() => {
-//     sequence$$.next({name: 'Ihor', age: 35})
-//     sequence$$.subscribe((v) => {
-//         console.log('Comp4', v);
-//     })
-// }, 3000);
-
-//
-// setTimeout(() => {
-//     sequence$$.subscribe((v) => {
-//         console.log('Comp2', v);
-//     })
-//     sequence$$.subscribe((v) => {
-//         console.log('Comp3', v);
-//     })
-//
-// }, 2000)
-//
-//
-// setTimeout(() => {
-//     sequence$$.complete();
-//     sequence$$.subscribe((v) => {
-//         console.log('Comp4', v);
-//     })
-// }, 4000)
-
-
-function getUsers(url: string) {
-    let subject: AsyncSubject<any>;
-    return new Observable((observer: Observer<any>) => {
-        if (!subject) {
-            subject = new AsyncSubject();
-            ajax(url).subscribe(subject)
-        }
-        return subject.subscribe(observer);
+// sequence$.connect();
+let sub1: Subscription;
+setTimeout(() => {
+    sub1 = sequence$.subscribe((v) => {
+        console.log('Sub 1', v)
     })
-}
-
-const users$ = getUsers('http://learn.javascript.ru/courses/groups/api/participants?key=157iojl')
-users$.subscribe((u) => {
-    console.log(u);
-})
+}, 1000)
 
 setTimeout(() => {
-    users$.subscribe((u) => {
-        console.log(u);
+    sub1.unsubscribe();
+}, 3000)
+
+
+setTimeout(() => {
+    sequence$.subscribe((v) => {
+        console.log('Sub 2', v)
     })
-}, 5000);
+}, 5000)
