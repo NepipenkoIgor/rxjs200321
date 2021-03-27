@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start:theory": "module=0-theory moduleName=Теория  node ./node_modules/.bin/webpack  serve",
+    "start:theory:windows": "set module=0-theory&&set moduleName=Теория&&webpack serve",
     "test:theory": "module=0-theory node ./node_modules/.bin/karma start",
     "start:task-1": "module=1-swipe moduleName='Функционал Swipe'  node ./node_modules/.bin/webpack  serve",
     "test:task-1": "module=1-swipe node ./node_modules/.bin/karma start",

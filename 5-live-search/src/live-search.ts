@@ -1,6 +1,6 @@
-import { fromEvent, Observable } from "rxjs";
+import { EMPTY, fromEvent, Observable } from "rxjs";
 import {
-    bufferCount,
+    bufferCount, catchError,
     concatAll,
     debounceTime,
     distinctUntilChanged,
@@ -31,7 +31,7 @@ export function liveSearch(source1$: Observable<InputEvent>, sourceFn: (text: st
             tap(() => {
                 console.log('load start')
             }),
-            switchMap(sourceFn)
+            switchMap(sourceFn),
         )
 }
 
@@ -48,6 +48,10 @@ export function request(source1$: Observable<AjaxResponse>) {
             tap(() => {
                 console.log('load end');
             }),
+            catchError((err) => {
+                console.log('catchError catch Err ---->', err);
+                return EMPTY
+            })
         )
 }
 

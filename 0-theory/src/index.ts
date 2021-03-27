@@ -1,39 +1,68 @@
 import '../../assets/css/style.css';
-import { fromEvent, interval, of } from "rxjs";
-import { exhaust, exhaustMap, map, mergeAll, mergeMap, pluck, switchAll } from "rxjs/operators";
+import { AsyncSubject, BehaviorSubject, Observable, Observer, ReplaySubject, Subject } from "rxjs";
 import { ajax } from "rxjs/ajax";
+// Observable + Observer = Subject
 
-// const sequence$ = interval(2000)
-//     .pipe(
-//         map((v) => {
-//             return of(v * 2);
-//         })
-//     )
-//
-// sequence$.subscribe((v) => {
-//     v.subscribe((v1) => {
-//         console.log(v1)
-//     })
+const sequence$$ = new ReplaySubject(undefined, 1500);
+
+// sequence$$.next()
+
+// sequence$$.subscribe((v) => {
+//     console.log('Comp1', v);
 // })
-const inputEl = document.querySelector('input') as HTMLInputElement;
-const sequence$ = fromEvent(inputEl, 'input')
-    .pipe(
-        exhaustMap((e) => {
-            const v = (e.target as HTMLInputElement).value;
-            return ajax(`http://learn.javascript.ru/courses/groups/api/participants?key=157iojl&q=${v}`)
-                .pipe(pluck('response'))
-        }),
-        // exhaust()
-        // mergeAll(1)
-        // mergeAll + map = mergeMap
-        // switchAll + map = switchMap
-        // concatAll + map = concatMap
-        // exhaust + map = exhaustMap
-    )
+//
+// sequence$$.next({name: 'Ihor', age: 30})
+// setTimeout(() => {
+//     sequence$$.next({name: 'Ihor', age: 31})
+// }, 1000);
+// setTimeout(() => {
+//     sequence$$.next({name: 'Ihor', age: 34})
+// }, 2000);
+// setTimeout(() => {
+//     sequence$$.next({name: 'Ihor', age: 35})
+//     sequence$$.subscribe((v) => {
+//         console.log('Comp4', v);
+//     })
+// }, 3000);
 
-sequence$.subscribe((v) => {
-    console.log(v)
-    // v.subscribe((v1) => {
-    //     console.log(v1)
-    // })
+//
+// setTimeout(() => {
+//     sequence$$.subscribe((v) => {
+//         console.log('Comp2', v);
+//     })
+//     sequence$$.subscribe((v) => {
+//         console.log('Comp3', v);
+//     })
+//
+// }, 2000)
+//
+//
+// setTimeout(() => {
+//     sequence$$.complete();
+//     sequence$$.subscribe((v) => {
+//         console.log('Comp4', v);
+//     })
+// }, 4000)
+
+
+function getUsers(url: string) {
+    let subject: AsyncSubject<any>;
+    return new Observable((observer: Observer<any>) => {
+        if (!subject) {
+            subject = new AsyncSubject();
+            ajax(url).subscribe(subject)
+        }
+        return subject.subscribe(observer);
+    })
+}
+
+const users$ = getUsers('http://learn.javascript.ru/courses/groups/api/participants?key=157iojl')
+users$.subscribe((u) => {
+    console.log(u);
 })
+
+setTimeout(() => {
+    users$.subscribe((u) => {
+        console.log(u);
+    })
+}, 5000);
